@@ -26,3 +26,17 @@ export function useUpdateUser(id: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
   });
 }
+
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiFetch<void>(`/users/${id}`, { method: 'DELETE' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
+  });
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (id: string) => apiFetch<void>(`/users/${id}/reset-password`, { method: 'POST' }),
+  });
+}

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { USER_ROLES, type UserRole } from '@weighbridge/shared';
 import { useCurrentUser } from '@/features/auth/useCurrentUser';
 import { Badge } from '@/components/ui/badge';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { InviteUserForm } from './InviteUserForm';
-import { useUpdateUser, useUsers } from './api';
+import { useDeleteUser, useResetPassword, useUpdateUser, useUsers } from './api';
 
 export function UsersListPage() {
   const { data: currentUser } = useCurrentUser();
@@ -43,9 +44,27 @@ function UserRow({
   isSelf: boolean;
 }) {
   const updateUser = useUpdateUser(user.id);
+  const deleteUser = useDeleteUser();
+  const resetPassword = useResetPassword();
+  const [resetSent, setResetSent] = useState(false);
+
+  const handleDelete = () => {
+    if (
+      !window.confirm(
+        `Permanently delete ${user.fullName || user.email}? They will lose access immediately. This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    deleteUser.mutate(user.id);
+  };
+
+  const handleResetPassword = () => {
+    resetPassword.mutate(user.id, { onSuccess: () => setResetSent(true) });
+  };
 
   return (
-    <div className="flex items-center justify-between gap-3 p-4">
+    <div className="flex flex-wrap items-center justify-between gap-3 p-4">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <p className="truncate font-medium">{user.fullName || user.email}</p>
@@ -53,9 +72,13 @@ function UserRow({
           {isSelf && <Badge variant="outline">You</Badge>}
         </div>
         <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+        {resetSent && <p className="text-xs text-muted-foreground">Reset link sent.</p>}
+        {deleteUser.isError && (
+          <p className="text-xs text-destructive">{(deleteUser.error as Error).message}</p>
+        )}
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
         <Select
           className="w-auto"
           value={user.role}
@@ -76,6 +99,24 @@ function UserRow({
           onClick={() => updateUser.mutate({ isActive: !user.isActive })}
         >
           {user.isActive ? 'Deactivate' : 'Reactivate'}
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={resetPassword.isPending || resetSent}
+          onClick={handleResetPassword}
+        >
+          {resetSent ? 'Link sent' : 'Reset password'}
+        </Button>
+
+        <Button
+          variant="destructive"
+          size="sm"
+          disabled={isSelf || deleteUser.isPending}
+          onClick={handleDelete}
+        >
+          Delete
         </Button>
       </div>
     </div>

@@ -16,6 +16,7 @@ WEB_PUSH_VAPID_PUBLIC=***
 WEB_PUSH_VAPID_PRIVATE=***
 APP_TIMEZONE=Asia/Colombo
 CORS_ORIGIN=***comma-separated allowed origins, e.g. https://your-app.vercel.app — omit locally to allow any origin***
+WEB_APP_URL=***the web app's own URL, e.g. https://your-app.vercel.app — used as the redirect target in invite/reset-password emails***
 ```
 
 ## apps/web/.env (Vite — only VITE_ vars reach the browser)

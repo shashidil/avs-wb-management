@@ -1,4 +1,5 @@
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AppUser } from '@weighbridge/shared';
 import { SUPABASE_CLIENT } from '../../supabase/supabase.provider';
@@ -9,7 +10,16 @@ const SELECT_COLUMNS = 'id, email, full_name, role, is_active, created_at, updat
 
 @Injectable()
 export class UsersService {
-  constructor(@Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient) {}
+  constructor(
+    @Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient,
+    private readonly config: ConfigService,
+  ) {}
+
+  /** Where invite/recovery emails send the user back to, to set their password. */
+  private acceptInviteUrl(): string {
+    const webAppUrl = this.config.getOrThrow<string>('WEB_APP_URL').replace(/\/$/, '');
+    return `${webAppUrl}/accept-invite`;
+  }
 
   async findAll(): Promise<AppUser[]> {
     const { data, error } = await this.supabase
@@ -24,7 +34,7 @@ export class UsersService {
   async invite(dto: InviteUserDto): Promise<AppUser> {
     const { data: invited, error: inviteError } = await this.supabase.auth.admin.inviteUserByEmail(
       dto.email,
-      { data: { full_name: dto.fullName } },
+      { data: { full_name: dto.fullName }, redirectTo: this.acceptInviteUrl() },
     );
 
     if (inviteError || !invited.user) {
@@ -68,6 +78,38 @@ export class UsersService {
 
     if (error) throw error;
     return mapAppUser(data);
+  }
+
+  async remove(id: string): Promise<void> {
+    const { data: existing, error: findError } = await this.supabase
+      .from('app_users')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (findError) throw findError;
+    if (!existing) throw new NotFoundException('User not found');
+
+    // app_users and push_subscriptions cascade-delete from auth.users, so this alone is enough.
+    const { error } = await this.supabase.auth.admin.deleteUser(id);
+    if (error) throw error;
+  }
+
+  async resetPassword(id: string): Promise<void> {
+    const { data: existing, error: findError } = await this.supabase
+      .from('app_users')
+      .select('email')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (findError) throw findError;
+    if (!existing) throw new NotFoundException('User not found');
+
+    const { error } = await this.supabase.auth.resetPasswordForEmail(existing.email, {
+      redirectTo: this.acceptInviteUrl(),
+    });
+
+    if (error) throw error;
   }
 }
 

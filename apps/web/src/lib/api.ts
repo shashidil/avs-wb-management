@@ -22,12 +22,14 @@ async function request<T>(path: string, init: RequestInit, setJsonContentType: b
 
   const res = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
 
+  const text = await res.text();
+  const body = text ? JSON.parse(text) : undefined;
+
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, body.message ?? res.statusText);
+    throw new ApiError(res.status, body?.message ?? res.statusText);
   }
 
-  return res.json() as Promise<T>;
+  return body as T;
 }
 
 /** JSON requests. */
