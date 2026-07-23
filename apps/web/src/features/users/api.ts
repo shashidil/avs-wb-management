@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AppUser, InviteUserInput, UpdateUserInput } from '@weighbridge/shared';
+import type { AppUser, CreateUserInput, UpdateUserInput } from '@weighbridge/shared';
 import { apiFetch } from '@/lib/api';
 
 export function useUsers() {
@@ -9,11 +9,11 @@ export function useUsers() {
   });
 }
 
-export function useInviteUser() {
+export function useCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: InviteUserInput) =>
-      apiFetch<AppUser>('/users/invite', { method: 'POST', body: JSON.stringify(input) }),
+    mutationFn: (input: CreateUserInput) =>
+      apiFetch<AppUser>('/users', { method: 'POST', body: JSON.stringify(input) }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
   });
 }
@@ -35,8 +35,9 @@ export function useDeleteUser() {
   });
 }
 
-export function useResetPassword() {
+export function useSetPassword() {
   return useMutation({
-    mutationFn: (id: string) => apiFetch<void>(`/users/${id}/reset-password`, { method: 'POST' }),
+    mutationFn: ({ id, password }: { id: string; password: string }) =>
+      apiFetch<void>(`/users/${id}/set-password`, { method: 'POST', body: JSON.stringify({ password }) }),
   });
 }

@@ -1,7 +1,5 @@
-import { useState } from 'react';
 import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom';
 import { LoginForm } from './features/auth/LoginForm';
-import { SetPasswordPage } from './features/auth/SetPasswordPage';
 import { useSession } from './features/auth/useSession';
 import { Layout } from './components/Layout';
 import { DashboardPage } from './features/dashboard/DashboardPage';
@@ -19,10 +17,8 @@ import { AdminRoute } from './components/AdminRoute';
 
 function App() {
   const { session, loading } = useSession();
-  const [isRecovery, setIsRecovery] = useState(() => /type=(invite|recovery)/.test(window.location.hash));
 
   if (loading) return null;
-  if (isRecovery) return <SetPasswordPage onDone={() => setIsRecovery(false)} />;
   if (!session) return <LoginForm />;
 
   return (

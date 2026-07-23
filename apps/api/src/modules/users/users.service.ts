@@ -1,25 +1,15 @@
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { AppUser } from '@weighbridge/shared';
 import { SUPABASE_CLIENT } from '../../supabase/supabase.provider';
-import { InviteUserDto } from './dto/invite-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 const SELECT_COLUMNS = 'id, email, full_name, role, is_active, created_at, updated_at';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient,
-    private readonly config: ConfigService,
-  ) {}
-
-  /** Where invite/recovery emails send the user back to, to set their password. */
-  private acceptInviteUrl(): string {
-    const webAppUrl = this.config.getOrThrow<string>('WEB_APP_URL').replace(/\/$/, '');
-    return `${webAppUrl}/accept-invite`;
-  }
+  constructor(@Inject(SUPABASE_CLIENT) private readonly supabase: SupabaseClient) {}
 
   async findAll(): Promise<AppUser[]> {
     const { data, error } = await this.supabase
@@ -31,20 +21,23 @@ export class UsersService {
     return data.map(mapAppUser);
   }
 
-  async invite(dto: InviteUserDto): Promise<AppUser> {
-    const { data: invited, error: inviteError } = await this.supabase.auth.admin.inviteUserByEmail(
-      dto.email,
-      { data: { full_name: dto.fullName }, redirectTo: this.acceptInviteUrl() },
-    );
+  /** Admin sets the password directly — no invite email involved. */
+  async create(dto: CreateUserDto): Promise<AppUser> {
+    const { data: created, error: createError } = await this.supabase.auth.admin.createUser({
+      email: dto.email,
+      password: dto.password,
+      email_confirm: true,
+      user_metadata: { full_name: dto.fullName },
+    });
 
-    if (inviteError || !invited.user) {
-      throw new ConflictException(inviteError?.message ?? 'Could not invite user');
+    if (createError || !created.user) {
+      throw new ConflictException(createError?.message ?? 'Could not create user');
     }
 
     const { data, error } = await this.supabase
       .from('app_users')
       .insert({
-        id: invited.user.id,
+        id: created.user.id,
         email: dto.email,
         full_name: dto.fullName || null,
         role: dto.role,
@@ -95,20 +88,18 @@ export class UsersService {
     if (error) throw error;
   }
 
-  async resetPassword(id: string): Promise<void> {
+  /** Admin sets a new password directly — no reset email involved. */
+  async setPassword(id: string, password: string): Promise<void> {
     const { data: existing, error: findError } = await this.supabase
       .from('app_users')
-      .select('email')
+      .select('id')
       .eq('id', id)
       .maybeSingle();
 
     if (findError) throw findError;
     if (!existing) throw new NotFoundException('User not found');
 
-    const { error } = await this.supabase.auth.resetPasswordForEmail(existing.email, {
-      redirectTo: this.acceptInviteUrl(),
-    });
-
+    const { error } = await this.supabase.auth.admin.updateUserById(id, { password });
     if (error) throw error;
   }
 }

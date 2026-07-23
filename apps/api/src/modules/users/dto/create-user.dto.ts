@@ -1,7 +1,7 @@
 import { USER_ROLES, type UserRole } from '@weighbridge/shared';
-import { IsEmail, IsIn, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
 
-export class InviteUserDto {
+export class CreateUserDto {
   @IsEmail()
   email!: string;
 
@@ -11,4 +11,8 @@ export class InviteUserDto {
 
   @IsIn(USER_ROLES)
   role!: UserRole;
+
+  @IsString()
+  @MinLength(8)
+  password!: string;
 }

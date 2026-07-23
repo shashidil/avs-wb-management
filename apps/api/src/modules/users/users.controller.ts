@@ -2,7 +2,8 @@ import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, Param, Pat
 import type { AppUser } from '@weighbridge/shared';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { InviteUserDto } from './dto/invite-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { SetPasswordDto } from './dto/set-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 
@@ -16,9 +17,9 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Post('invite')
-  invite(@Body() dto: InviteUserDto): Promise<AppUser> {
-    return this.usersService.invite(dto);
+  @Post()
+  create(@Body() dto: CreateUserDto): Promise<AppUser> {
+    return this.usersService.create(dto);
   }
 
   @Patch(':id')
@@ -26,10 +27,10 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
-  @Post(':id/reset-password')
+  @Post(':id/set-password')
   @HttpCode(200)
-  resetPassword(@Param('id') id: string): Promise<void> {
-    return this.usersService.resetPassword(id);
+  setPassword(@Param('id') id: string, @Body() dto: SetPasswordDto): Promise<void> {
+    return this.usersService.setPassword(id, dto.password);
   }
 
   @Delete(':id')
