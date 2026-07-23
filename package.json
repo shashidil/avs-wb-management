@@ -1,0 +1,8 @@
+{
+  "name": "weighbridge-system",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

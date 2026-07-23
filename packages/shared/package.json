@@ -1,0 +1,19 @@
+{
+  "name": "@weighbridge/shared",
+  "version": "1.0.0",
+  "description": "Shared TS types (DTOs, enums) used by apps/api and apps/web",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
