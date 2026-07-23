@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import {
   licenceSchema,
   LICENCE_STATUSES,
+  PAYMENT_STATUSES,
   type Licence,
   type LicenceInput,
 } from '@weighbridge/shared';
@@ -39,6 +40,7 @@ export function LicenceForm({ defaultValues, submitLabel, onSubmit }: LicenceFor
       issueDate: defaultValues?.issueDate ?? '',
       expiryDate: defaultValues?.expiryDate ?? '',
       status: defaultValues?.status ?? 'active',
+      paymentStatus: defaultValues?.paymentStatus ?? 'pending',
       notes: defaultValues?.notes ?? '',
     },
   });
@@ -67,6 +69,16 @@ export function LicenceForm({ defaultValues, submitLabel, onSubmit }: LicenceFor
             <Field label="Status" htmlFor="status" error={errors.status?.message}>
               <Select id="status" {...register('status')}>
                 {LICENCE_STATUSES.map((s) => (
+                  <option key={s} value={s} className="capitalize">
+                    {s}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+
+            <Field label="Payment status" htmlFor="paymentStatus" error={errors.paymentStatus?.message}>
+              <Select id="paymentStatus" {...register('paymentStatus')}>
+                {PAYMENT_STATUSES.map((s) => (
                   <option key={s} value={s} className="capitalize">
                     {s}
                   </option>

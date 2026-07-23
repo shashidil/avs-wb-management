@@ -8,12 +8,13 @@ import { UpdateLicenceDto } from './dto/update-licence.dto';
 
 const SELECT_COLUMNS = `
   id, client_id, site_name, licence_no, issuing_authority, issue_date, expiry_date, status,
-  document_url, notes, created_at, updated_at, clients ( name )
+  payment_status, document_url, notes, created_at, updated_at, clients ( name )
 `;
 
 interface LicenceFilters {
   clientId?: string;
   status?: string;
+  paymentStatus?: string;
   expiryDate?: string;
 }
 
@@ -29,6 +30,7 @@ export class LicencesService {
 
     if (filters.clientId) query = query.eq('client_id', filters.clientId);
     if (filters.status) query = query.eq('status', filters.status);
+    if (filters.paymentStatus) query = query.eq('payment_status', filters.paymentStatus);
     if (filters.expiryDate) query = query.eq('expiry_date', filters.expiryDate);
 
     const { data, error } = await query;
@@ -71,6 +73,7 @@ export class LicencesService {
         issue_date: dto.issueDate,
         expiry_date: dto.expiryDate,
         status: dto.status ?? 'active',
+        payment_status: dto.paymentStatus ?? 'pending',
         notes: dto.notes,
       })
       .select(SELECT_COLUMNS)
@@ -93,6 +96,7 @@ export class LicencesService {
         ...(dto.issueDate !== undefined && { issue_date: dto.issueDate }),
         ...(dto.expiryDate !== undefined && { expiry_date: dto.expiryDate }),
         ...(dto.status !== undefined && { status: dto.status }),
+        ...(dto.paymentStatus !== undefined && { payment_status: dto.paymentStatus }),
         ...(dto.notes !== undefined && { notes: dto.notes }),
       })
       .eq('id', id)
@@ -138,6 +142,7 @@ function mapLicence(row: Record<string, any>): Licence {
     issueDate: row.issue_date,
     expiryDate: row.expiry_date,
     status: row.status,
+    paymentStatus: row.payment_status,
     documentUrl: row.document_url,
     notes: row.notes,
     createdAt: row.created_at,

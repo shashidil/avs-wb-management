@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
-import { LICENCE_STATUSES, type LicenceStatus } from '@weighbridge/shared';
+import { LICENCE_STATUSES, PAYMENT_STATUSES, type LicenceStatus, type PaymentStatus } from '@weighbridge/shared';
 import { useLicences } from './api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,9 +16,18 @@ const STATUS_BADGE_VARIANT: Record<LicenceStatus, 'default' | 'secondary' | 'des
   suspended: 'destructive',
 };
 
+const PAYMENT_BADGE_VARIANT: Record<PaymentStatus, 'default' | 'secondary'> = {
+  paid: 'default',
+  pending: 'secondary',
+};
+
 export function LicencesListPage() {
   const [status, setStatus] = useState<LicenceStatus | ''>('');
-  const { data: licences, isLoading, error } = useLicences({ status: status || undefined });
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | ''>('');
+  const { data: licences, isLoading, error } = useLicences({
+    status: status || undefined,
+    paymentStatus: paymentStatus || undefined,
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -42,6 +51,23 @@ export function LicencesListPage() {
         ))}
       </div>
 
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-xs font-medium text-muted-foreground">Payment:</span>
+        <FilterChip
+          label="All"
+          active={paymentStatus === ''}
+          onClick={() => setPaymentStatus('')}
+        />
+        {PAYMENT_STATUSES.map((s) => (
+          <FilterChip
+            key={s}
+            label={s}
+            active={paymentStatus === s}
+            onClick={() => setPaymentStatus(s)}
+          />
+        ))}
+      </div>
+
       {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
       {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
 
@@ -59,6 +85,9 @@ export function LicencesListPage() {
                 </p>
                 <Badge variant={STATUS_BADGE_VARIANT[licence.status]} className="capitalize">
                   {licence.status}
+                </Badge>
+                <Badge variant={PAYMENT_BADGE_VARIANT[licence.paymentStatus]} className="capitalize">
+                  {licence.paymentStatus}
                 </Badge>
               </div>
               <p className="truncate text-sm text-muted-foreground">

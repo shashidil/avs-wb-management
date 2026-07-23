@@ -1,4 +1,4 @@
-import { LICENCE_STATUSES, type LicenceStatus } from '@weighbridge/shared';
+import { LICENCE_STATUSES, PAYMENT_STATUSES, type LicenceStatus, type PaymentStatus } from '@weighbridge/shared';
 import { IsDateString, IsIn, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 
 export class CreateLicenceDto {
@@ -28,6 +28,10 @@ export class CreateLicenceDto {
   @IsOptional()
   @IsIn(LICENCE_STATUSES)
   status?: LicenceStatus;
+
+  @IsOptional()
+  @IsIn(PAYMENT_STATUSES)
+  paymentStatus?: PaymentStatus;
 
   @IsOptional()
   @IsString()

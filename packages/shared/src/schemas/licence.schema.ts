@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LICENCE_STATUSES } from '../enums/licence-status.enum';
+import { PAYMENT_STATUSES } from '../enums/payment-status.enum';
 
 export const licenceSchema = z.object({
   clientId: z.string().uuid().optional().or(z.literal('')),
@@ -9,6 +10,7 @@ export const licenceSchema = z.object({
   issueDate: z.string().optional().or(z.literal('')),
   expiryDate: z.string().min(1, 'Expiry date is required'),
   status: z.enum(LICENCE_STATUSES),
+  paymentStatus: z.enum(PAYMENT_STATUSES),
   notes: z.string().optional().or(z.literal('')),
 });
 

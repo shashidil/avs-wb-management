@@ -5,12 +5,14 @@ import { apiFetch, apiFetchRaw } from '@/lib/api';
 interface LicenceFilters {
   clientId?: string;
   status?: string;
+  paymentStatus?: string;
 }
 
 function buildQuery(filters: LicenceFilters): string {
   const params = new URLSearchParams();
   if (filters.clientId) params.set('clientId', filters.clientId);
   if (filters.status) params.set('status', filters.status);
+  if (filters.paymentStatus) params.set('paymentStatus', filters.paymentStatus);
   const qs = params.toString();
   return qs ? `?${qs}` : '';
 }

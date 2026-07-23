@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import {
   agreementSchema,
   AGREEMENT_STATUSES,
+  PAYMENT_STATUSES,
   type Agreement,
   type AgreementInput,
 } from '@weighbridge/shared';
@@ -39,6 +40,7 @@ export function AgreementForm({ defaultValues, submitLabel, onSubmit }: Agreemen
       expiryDate: defaultValues?.expiryDate ?? '',
       value: defaultValues?.value ?? undefined,
       status: defaultValues?.status ?? 'active',
+      paymentStatus: defaultValues?.paymentStatus ?? 'pending',
       notes: defaultValues?.notes ?? '',
     },
   });
@@ -74,6 +76,16 @@ export function AgreementForm({ defaultValues, submitLabel, onSubmit }: Agreemen
             <Field label="Status" htmlFor="status" error={errors.status?.message}>
               <Select id="status" {...register('status')}>
                 {AGREEMENT_STATUSES.map((s) => (
+                  <option key={s} value={s} className="capitalize">
+                    {s}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+
+            <Field label="Payment status" htmlFor="paymentStatus" error={errors.paymentStatus?.message}>
+              <Select id="paymentStatus" {...register('paymentStatus')}>
+                {PAYMENT_STATUSES.map((s) => (
                   <option key={s} value={s} className="capitalize">
                     {s}
                   </option>

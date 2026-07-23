@@ -26,8 +26,9 @@ export class AgreementsController {
   findAll(
     @Query('clientId') clientId?: string,
     @Query('status') status?: string,
+    @Query('paymentStatus') paymentStatus?: string,
   ): Promise<Agreement[]> {
-    return this.agreementsService.findAll({ clientId, status });
+    return this.agreementsService.findAll({ clientId, status, paymentStatus });
   }
 
   @Get(':id')

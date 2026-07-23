@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
-import { AGREEMENT_STATUSES, type AgreementStatus } from '@weighbridge/shared';
+import { AGREEMENT_STATUSES, PAYMENT_STATUSES, type AgreementStatus, type PaymentStatus } from '@weighbridge/shared';
 import { useAgreements } from './api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,9 +16,18 @@ const STATUS_BADGE_VARIANT: Record<AgreementStatus, 'default' | 'secondary' | 'd
   terminated: 'destructive',
 };
 
+const PAYMENT_BADGE_VARIANT: Record<PaymentStatus, 'default' | 'secondary'> = {
+  paid: 'default',
+  pending: 'secondary',
+};
+
 export function AgreementsListPage() {
   const [status, setStatus] = useState<AgreementStatus | ''>('');
-  const { data: agreements, isLoading, error } = useAgreements({ status: status || undefined });
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | ''>('');
+  const { data: agreements, isLoading, error } = useAgreements({
+    status: status || undefined,
+    paymentStatus: paymentStatus || undefined,
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -42,6 +51,23 @@ export function AgreementsListPage() {
         ))}
       </div>
 
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-xs font-medium text-muted-foreground">Payment:</span>
+        <FilterChip
+          label="All"
+          active={paymentStatus === ''}
+          onClick={() => setPaymentStatus('')}
+        />
+        {PAYMENT_STATUSES.map((s) => (
+          <FilterChip
+            key={s}
+            label={s}
+            active={paymentStatus === s}
+            onClick={() => setPaymentStatus(s)}
+          />
+        ))}
+      </div>
+
       {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
       {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
 
@@ -57,6 +83,9 @@ export function AgreementsListPage() {
                 <p className="truncate font-medium">{agreement.title || agreement.clientName}</p>
                 <Badge variant={STATUS_BADGE_VARIANT[agreement.status]} className="capitalize">
                   {agreement.status}
+                </Badge>
+                <Badge variant={PAYMENT_BADGE_VARIANT[agreement.paymentStatus]} className="capitalize">
+                  {agreement.paymentStatus}
                 </Badge>
               </div>
               <p className="truncate text-sm text-muted-foreground">

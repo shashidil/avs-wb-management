@@ -5,6 +5,7 @@ Source of truth for tables. Do not invent columns. All tables have `id uuid pk`,
 ## Enums
 - `agreement_status`: `active | expired | terminated | pending`
 - `licence_status`: `active | expired | suspended | pending`
+- `payment_status`: `pending | paid`
 - `reminder_channel`: `email | push`
 - `entity_type`: `agreement | licence`
 - `user_role`: `admin | staff`
@@ -36,6 +37,7 @@ Source of truth for tables. Do not invent columns. All tables have `id uuid pk`,
 | expiry_date | date | required, indexed |
 | value | numeric(14,2) | optional |
 | status | agreement_status | default active |
+| payment_status | payment_status | default pending |
 | document_url | text | Supabase storage path |
 | notes | text | |
 
@@ -50,6 +52,7 @@ Source of truth for tables. Do not invent columns. All tables have `id uuid pk`,
 | issue_date | date | |
 | expiry_date | date | required, indexed |
 | status | licence_status | default active |
+| payment_status | payment_status | default pending |
 | document_url | text | |
 | notes | text | |
 
@@ -93,6 +96,12 @@ Prevents duplicate rows per device: unique on `endpoint`.
 - `jobs`: id, job_no (formatted e.g. WB-2026-0001), client_id, type, status, created_by, dates...
 - `job_sequences`: for atomic sequential number generation per year.
 - `inquiries`: id, client_id?, subject, description, status, assigned_to, resolution...
+- `payments`: id, entity_type (agreement|licence), entity_id, amount, paid_at, method?, notes,
+  created_by. Lets an agreement/licence be paid in installments — sum of its `payments` rows vs
+  the agreement's `value` gives the outstanding balance. `agreements.payment_status` /
+  `licences.payment_status` would then be derived (or kept as a manually-set summary flag) rather
+  than the only source of truth. Needs a dashboard/list view for total outstanding across all
+  clients.
 
 ## Reminder thresholds
 Default remind at **90, 60, 30, 7** days before expiry. Configurable later.

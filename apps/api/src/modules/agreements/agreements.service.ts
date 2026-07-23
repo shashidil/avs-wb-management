@@ -7,13 +7,14 @@ import { CreateAgreementDto } from './dto/create-agreement.dto';
 import { UpdateAgreementDto } from './dto/update-agreement.dto';
 
 const SELECT_COLUMNS = `
-  id, client_id, title, type, start_date, expiry_date, value, status, document_url, notes,
-  created_at, updated_at, clients ( name )
+  id, client_id, title, type, start_date, expiry_date, value, status, payment_status,
+  document_url, notes, created_at, updated_at, clients ( name )
 `;
 
 interface AgreementFilters {
   clientId?: string;
   status?: string;
+  paymentStatus?: string;
   expiryDate?: string;
 }
 
@@ -29,6 +30,7 @@ export class AgreementsService {
 
     if (filters.clientId) query = query.eq('client_id', filters.clientId);
     if (filters.status) query = query.eq('status', filters.status);
+    if (filters.paymentStatus) query = query.eq('payment_status', filters.paymentStatus);
     if (filters.expiryDate) query = query.eq('expiry_date', filters.expiryDate);
 
     const { data, error } = await query;
@@ -71,6 +73,7 @@ export class AgreementsService {
         expiry_date: dto.expiryDate,
         value: dto.value,
         status: dto.status ?? 'active',
+        payment_status: dto.paymentStatus ?? 'pending',
         notes: dto.notes,
       })
       .select(SELECT_COLUMNS)
@@ -93,6 +96,7 @@ export class AgreementsService {
         ...(dto.expiryDate !== undefined && { expiry_date: dto.expiryDate }),
         ...(dto.value !== undefined && { value: dto.value }),
         ...(dto.status !== undefined && { status: dto.status }),
+        ...(dto.paymentStatus !== undefined && { payment_status: dto.paymentStatus }),
         ...(dto.notes !== undefined && { notes: dto.notes }),
       })
       .eq('id', id)
@@ -138,6 +142,7 @@ function mapAgreement(row: Record<string, any>): Agreement {
     expiryDate: row.expiry_date,
     value: row.value === null || row.value === undefined ? null : Number(row.value),
     status: row.status,
+    paymentStatus: row.payment_status,
     documentUrl: row.document_url,
     notes: row.notes,
     createdAt: row.created_at,

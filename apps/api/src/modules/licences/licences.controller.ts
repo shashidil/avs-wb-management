@@ -26,8 +26,9 @@ export class LicencesController {
   findAll(
     @Query('clientId') clientId?: string,
     @Query('status') status?: string,
+    @Query('paymentStatus') paymentStatus?: string,
   ): Promise<Licence[]> {
-    return this.licencesService.findAll({ clientId, status });
+    return this.licencesService.findAll({ clientId, status, paymentStatus });
   }
 
   @Get(':id')

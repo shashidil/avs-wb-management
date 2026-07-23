@@ -1,4 +1,4 @@
-import { AGREEMENT_STATUSES, type AgreementStatus } from '@weighbridge/shared';
+import { AGREEMENT_STATUSES, PAYMENT_STATUSES, type AgreementStatus, type PaymentStatus } from '@weighbridge/shared';
 import { IsDateString, IsIn, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 
 export class CreateAgreementDto {
@@ -28,6 +28,10 @@ export class CreateAgreementDto {
   @IsOptional()
   @IsIn(AGREEMENT_STATUSES)
   status?: AgreementStatus;
+
+  @IsOptional()
+  @IsIn(PAYMENT_STATUSES)
+  paymentStatus?: PaymentStatus;
 
   @IsOptional()
   @IsString()

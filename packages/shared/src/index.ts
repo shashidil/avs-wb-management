@@ -2,6 +2,7 @@ export * from './enums/user-role.enum';
 export * from './enums/agreement-status.enum';
 export * from './enums/licence-status.enum';
 export * from './enums/reminder-channel.enum';
+export * from './enums/payment-status.enum';
 export * from './types/app-user';
 export * from './types/client';
 export * from './types/agreement';
